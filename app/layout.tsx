@@ -6,7 +6,7 @@ import { SessionProvider } from '@/components/providers/session-provider'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'GymTracker - Track Your Fitness Journey',
+  title: 'HK GymTracker',
   description: 'Track your gym attendance with friends and stay motivated together',
 }
 
