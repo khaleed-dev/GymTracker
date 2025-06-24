@@ -69,4 +69,4 @@ MIT
 ---
 
 ## Credits
-Built with ❤️ by HK and friends. 
+Built with ❤️ by @khaleed-dev.
