@@ -122,7 +122,6 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Accept date as an optional query param, default to today
     const { searchParams } = new URL(req.url)
     const dateParam = searchParams.get('date')
     let date = new Date()
@@ -135,21 +134,33 @@ export async function DELETE(req: NextRequest) {
     }
     date.setHours(0, 0, 0, 0)
 
-    try {
-      // Delete the check-in for this user and date
-      await prisma.checkIn.delete({
-        where: {
-          userId_date: {
-            userId: session.user.id,
-            date: date
-          }
+    // Log for debugging
+    console.log('Attempting to delete check-in for user:', session.user.id, 'on date:', date)
+
+    // Check if the record exists
+    const existingCheckIn = await prisma.checkIn.findUnique({
+      where: {
+        userId_date: {
+          userId: session.user.id,
+          date: date
         }
-      })
-      return NextResponse.json({ success: true })
-    } catch (prismaError) {
-      console.error('Prisma delete error:', prismaError)
-      return NextResponse.json({ error: 'Could not delete check-in (DB error)' }, { status: 500 })
+      }
+    })
+
+    if (!existingCheckIn) {
+      return NextResponse.json({ error: 'Check-in not found for this date.' }, { status: 404 })
     }
+
+    // Delete the check-in
+    await prisma.checkIn.delete({
+      where: {
+        userId_date: {
+          userId: session.user.id,
+          date: date
+        }
+      }
+    })
+    return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Check-in DELETE handler error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
