@@ -128,20 +128,30 @@ export async function DELETE(req: NextRequest) {
     let date = new Date()
     if (dateParam) {
       date = new Date(dateParam)
+      if (isNaN(date.getTime())) {
+        console.error('Invalid date parameter:', dateParam)
+        return NextResponse.json({ error: 'Invalid date parameter' }, { status: 400 })
+      }
     }
     date.setHours(0, 0, 0, 0)
 
-    // Delete the check-in for this user and date
-    await prisma.checkIn.delete({
-      where: {
-        userId_date: {
-          userId: session.user.id,
-          date: date
+    try {
+      // Delete the check-in for this user and date
+      await prisma.checkIn.delete({
+        where: {
+          userId_date: {
+            userId: session.user.id,
+            date: date
+          }
         }
-      }
-    })
-    return NextResponse.json({ success: true })
+      })
+      return NextResponse.json({ success: true })
+    } catch (prismaError) {
+      console.error('Prisma delete error:', prismaError)
+      return NextResponse.json({ error: 'Could not delete check-in (DB error)' }, { status: 500 })
+    }
   } catch (error) {
-    return NextResponse.json({ error: 'Could not delete check-in' }, { status: 500 })
+    console.error('Check-in DELETE handler error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
